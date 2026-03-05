@@ -10,7 +10,7 @@ from pathlib import Path
 from flask import Flask, render_template, request, jsonify
 
 import instaloader
-import whisper
+from faster_whisper import WhisperModel
 
 app = Flask(__name__)
 
@@ -31,7 +31,7 @@ def get_whisper_model():
     if _whisper_model is None:
         with _whisper_lock:
             if _whisper_model is None:
-                _whisper_model = whisper.load_model("base")
+                _whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
     return _whisper_model
 
 
@@ -115,8 +115,9 @@ def download_and_transcribe(video_url, shortcode):
                 return "[Could not extract audio]"
 
         model = get_whisper_model()
-        result = model.transcribe(str(audio_path), language=None)
-        return result.get("text", "").strip() or "[No speech detected]"
+        segments, _ = model.transcribe(str(audio_path))
+        text = " ".join(seg.text.strip() for seg in segments)
+        return text or "[No speech detected]"
 
     except Exception as e:
         return f"[Transcription failed: {str(e)[:100]}]"

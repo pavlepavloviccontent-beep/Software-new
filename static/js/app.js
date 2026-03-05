@@ -1,5 +1,6 @@
 let currentJobId = null;
 let pollInterval = null;
+let lastResult = null;
 
 function startAnalysis() {
     const input = document.getElementById("profileInput").value.trim();
@@ -26,7 +27,7 @@ function startAnalysis() {
             currentJobId = data.job_id;
             pollStatus();
         })
-        .catch((err) => {
+        .catch(() => {
             showError("Network error. Please try again.");
             btn.disabled = false;
         });
@@ -53,6 +54,7 @@ function pollStatus() {
                     document.getElementById("analyzeBtn").disabled = false;
 
                     if (data.result && data.result.total_videos > 0) {
+                        lastResult = data.result;
                         renderResults(data.result);
                     } else {
                         showError(data.message || "No videos found.");
@@ -73,27 +75,35 @@ function renderResults(result) {
     show("resultsSection");
 
     document.getElementById("profileName").textContent =
-        `@${result.username}` + (result.full_name ? ` (${result.full_name})` : "");
-    document.getElementById("totalVideos").textContent = `${result.total_videos} videos found`;
+        `@${result.username}` + (result.full_name ? ` — ${result.full_name}` : "");
+    document.getElementById("totalVideos").textContent = `${result.total_videos} videos`;
     document.getElementById("totalPosts").textContent = `${result.total_posts} total posts`;
 
-    renderVideoList("topVideos", result.top_videos, "most");
-    renderVideoList("bottomVideos", result.bottom_videos, "least");
+    renderVideoList("topVideos", result.top_videos);
+    renderVideoList("bottomVideos", result.bottom_videos);
 }
 
-function renderVideoList(containerId, videos, type) {
+function renderVideoList(containerId, videos) {
     const container = document.getElementById(containerId);
     container.innerHTML = "";
 
     if (!videos || videos.length === 0) {
-        container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No videos to display</p>';
+        container.innerHTML =
+            '<p style="text-align:center;color:var(--text-muted);padding:30px;grid-column:1/-1;">No videos to display</p>';
         return;
     }
 
     videos.forEach((video, index) => {
         const rank = index + 1;
+        const date = video.date ? new Date(video.date).toLocaleDateString("en-US", {
+            year: "numeric", month: "short", day: "numeric"
+        }) : "";
+
         const card = document.createElement("div");
         card.className = "video-card";
+
+        const transcriptId = `transcript_${containerId}_${index}`;
+
         card.innerHTML = `
             <div class="video-header" onclick="toggleCard(this)">
                 <div class="video-rank">${rank}</div>
@@ -104,19 +114,21 @@ function renderVideoList(containerId, videos, type) {
                         <span>${formatNumber(video.likes)} likes</span>
                         <span>${formatNumber(video.comments)} comments</span>
                     </div>
+                    ${date ? `<div class="video-date">${date}</div>` : ""}
                 </div>
                 <div class="video-expand">&#9660;</div>
             </div>
             <div class="video-transcript">
                 <div class="transcript-label">Transcript / Script</div>
-                <div class="transcript-text">${escapeHtml(video.transcript || "[Not available]")}</div>
-                <button class="copy-btn" onclick="copyTranscript(this, ${JSON.stringify(video.transcript || "").replace(/"/g, "&quot;")})">
-                    Copy Transcript
-                </button>
-                <br>
-                <a class="video-link" href="${video.url}" target="_blank" rel="noopener">
-                    View on Instagram
-                </a>
+                <div class="transcript-text" id="${transcriptId}">${escapeHtml(video.transcript || "[Not available]")}</div>
+                <div class="transcript-actions">
+                    <button class="copy-btn" onclick="copyTranscript(this, '${transcriptId}')">
+                        Copy Transcript
+                    </button>
+                    <a class="video-link" href="${escapeHtml(video.url)}" target="_blank" rel="noopener">
+                        View on Instagram
+                    </a>
+                </div>
             </div>
         `;
         container.appendChild(card);
@@ -146,7 +158,8 @@ function switchTab(tab) {
     }
 }
 
-function copyTranscript(btn, text) {
+function copyTranscript(btn, transcriptId) {
+    const text = document.getElementById(transcriptId).textContent;
     navigator.clipboard.writeText(text).then(() => {
         btn.textContent = "Copied!";
         btn.classList.add("copied");
@@ -155,6 +168,41 @@ function copyTranscript(btn, text) {
             btn.classList.remove("copied");
         }, 2000);
     });
+}
+
+function exportAll() {
+    if (!lastResult) return;
+
+    let text = `Instagram Viral Analysis: @${lastResult.username}\n`;
+    text += `${"=".repeat(50)}\n\n`;
+
+    text += `TOP 15 MOST VIRAL VIDEOS\n`;
+    text += `${"-".repeat(30)}\n\n`;
+
+    lastResult.top_videos.forEach((v, i) => {
+        text += `#${i + 1} — ${formatNumber(v.views)} views | ${formatNumber(v.likes)} likes\n`;
+        text += `Caption: ${v.caption || "No caption"}\n`;
+        text += `Link: ${v.url}\n`;
+        text += `Transcript:\n${v.transcript || "[Not available]"}\n\n`;
+    });
+
+    text += `\n15 LEAST VIRAL VIDEOS\n`;
+    text += `${"-".repeat(30)}\n\n`;
+
+    lastResult.bottom_videos.forEach((v, i) => {
+        text += `#${i + 1} — ${formatNumber(v.views)} views | ${formatNumber(v.likes)} likes\n`;
+        text += `Caption: ${v.caption || "No caption"}\n`;
+        text += `Link: ${v.url}\n`;
+        text += `Transcript:\n${v.transcript || "[Not available]"}\n\n`;
+    });
+
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `instagram_analysis_${lastResult.username}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 function formatNumber(num) {
@@ -195,7 +243,6 @@ function hide(id) {
     document.getElementById(id).classList.add("hidden");
 }
 
-// Allow Enter key to trigger analysis
 document.getElementById("profileInput").addEventListener("keydown", (e) => {
     if (e.key === "Enter") startAnalysis();
 });

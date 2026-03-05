@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Viral Analyzer</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
@@ -12,7 +10,7 @@
     <div class="app">
         <header>
             <h1>Instagram Viral Analyzer</h1>
-            <p class="subtitle">Analyze any profile's most &amp; least viral videos with transcripts</p>
+            <p class="subtitle">Analyze any profile's most &amp; least viral videos with full transcripts</p>
         </header>
 
         <div class="input-section">
@@ -25,7 +23,7 @@
                     autocorrect="off"
                     spellcheck="false"
                 >
-                <button id="analyzeBtn" onclick="startAnalysis()">Analyze</button>
+                <button id="analyzeBtn" onclick="startAnalysis()">Analyze Profile</button>
             </div>
             <p class="hint">e.g. https://instagram.com/username or @username</p>
         </div>
@@ -49,16 +47,21 @@
 
         <div id="resultsSection" class="results-section hidden">
             <div class="profile-summary">
-                <h2 id="profileName"></h2>
+                <div>
+                    <h2 id="profileName"></h2>
+                </div>
                 <div class="stats">
                     <span id="totalVideos"></span>
                     <span id="totalPosts"></span>
                 </div>
             </div>
 
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('top')">Top 15 Most Viral</button>
-                <button class="tab" onclick="switchTab('bottom')">15 Least Viral</button>
+            <div class="toolbar">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('top')">Top 15 Most Viral</button>
+                    <button class="tab" onclick="switchTab('bottom')">15 Least Viral</button>
+                </div>
+                <button class="export-btn" onclick="exportAll()">Export All Transcripts</button>
             </div>
 
             <div id="topVideos" class="video-list"></div>

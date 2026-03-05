@@ -1,21 +1,28 @@
 # Instagram Viral Analyzer
 
-A mobile-friendly web app that analyzes any Instagram profile to find the most and least viral videos, then transcribes them to extract the scripts.
+A desktop web app that analyzes any Instagram profile to find the most and least viral videos, then transcribes them to extract the scripts.
 
 ## Features
 
-- **Profile Analysis**: Enter any public Instagram profile URL or username
-- **Viral Ranking**: Shows top 15 most viral and 15 least viral videos sorted by view count
-- **Auto-Transcription**: Automatically transcribes each video's audio using OpenAI Whisper (runs locally, free)
-- **Copy Scripts**: One-tap copy of any video transcript
-- **Mobile-First**: Designed for phone screens with a dark, modern UI
+- **Profile Analysis** — Enter any public Instagram profile URL or username
+- **Viral Ranking** — Top 15 most viral + 15 least viral videos sorted by views
+- **Auto-Transcription** — Transcribes each video using OpenAI Whisper (runs locally, free)
+- **Export All** — Download all transcripts as a text file with one click
+- **Copy Scripts** — Copy any individual transcript to clipboard
+- **Desktop-First UI** — Two-column grid layout, dark theme, responsive down to mobile
 
-## Requirements
+## Deploy to the Web (Render — Free)
 
-- Python 3.9+
-- ffmpeg (for audio processing)
+1. Push this repo to GitHub
+2. Go to [render.com](https://render.com) and sign up (free)
+3. Click **New > Web Service**
+4. Connect your GitHub repo
+5. Render auto-detects the `Dockerfile` — just click **Deploy**
+6. Your app will be live at `https://your-app.onrender.com`
 
-## Quick Start
+> **Note:** The free Render tier has 512MB RAM. Whisper's `base` model fits fine. For heavy usage, upgrade to a paid plan.
+
+## Run Locally
 
 ```bash
 # 1. Install dependencies
@@ -25,29 +32,27 @@ chmod +x setup.sh run.sh
 # 2. Run the app
 ./run.sh
 
-# 3. Open on your phone
-# Navigate to http://<your-computer-ip>:5000
+# 3. Open http://localhost:5000
 ```
+
+## Requirements
+
+- Python 3.9+
+- ffmpeg (`sudo apt install ffmpeg` / `brew install ffmpeg`)
 
 ## How It Works
 
 1. You enter an Instagram profile URL or @username
-2. The app fetches all video posts from the profile using Instaloader
-3. Videos are ranked by view count (most to least viral)
+2. The app fetches all video posts using Instaloader
+3. Videos are ranked by view count
 4. Top 15 and bottom 15 videos are transcribed using OpenAI Whisper
-5. Results are displayed with expandable cards showing the full transcript
+5. Results shown in a two-column grid with expandable transcript cards
 
 ## Tech Stack
 
-- **Backend**: Python / Flask
+- **Backend**: Python / Flask / Gunicorn
 - **Scraping**: Instaloader
 - **Video Download**: yt-dlp
-- **Transcription**: OpenAI Whisper (local, no API key needed)
-- **Frontend**: Vanilla HTML/CSS/JS (mobile-first design)
-
-## Notes
-
-- Only **public** Instagram profiles can be analyzed (private profiles require login)
-- Transcription quality depends on audio clarity; the "base" Whisper model is used by default for speed
-- The first run downloads the Whisper model (~140MB), subsequent runs use the cached model
-- For better transcription accuracy, change `whisper.load_model("base")` to `"medium"` or `"large"` in `app.py`
+- **Transcription**: OpenAI Whisper (local, no API key)
+- **Frontend**: Vanilla HTML/CSS/JS
+- **Hosting**: Docker + Render

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Instagram Viral Analyzer</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app">
+        <header>
+            <h1>Instagram Viral Analyzer</h1>
+            <p class="subtitle">Analyze any profile's most &amp; least viral videos with transcripts</p>
+        </header>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input
+                    type="text"
+                    id="profileInput"
+                    placeholder="Paste Instagram profile URL or @username"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                >
+                <button id="analyzeBtn" onclick="startAnalysis()">Analyze</button>
+            </div>
+            <p class="hint">e.g. https://instagram.com/username or @username</p>
+        </div>
+
+        <div id="statusSection" class="status-section hidden">
+            <div class="status-card">
+                <div class="spinner" id="spinner"></div>
+                <p id="statusMessage">Starting analysis...</p>
+                <div class="progress-bar-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="errorSection" class="error-section hidden">
+            <div class="error-card">
+                <p id="errorMessage"></p>
+                <button onclick="resetUI()">Try Again</button>
+            </div>
+        </div>
+
+        <div id="resultsSection" class="results-section hidden">
+            <div class="profile-summary">
+                <h2 id="profileName"></h2>
+                <div class="stats">
+                    <span id="totalVideos"></span>
+                    <span id="totalPosts"></span>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('top')">Top 15 Most Viral</button>
+                <button class="tab" onclick="switchTab('bottom')">15 Least Viral</button>
+            </div>
+
+            <div id="topVideos" class="video-list"></div>
+            <div id="bottomVideos" class="video-list hidden"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
